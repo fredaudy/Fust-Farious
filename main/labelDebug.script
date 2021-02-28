@@ -1,0 +1,54 @@
+function init(self)
+	self.labelMessage = ""
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("carPos") then
+		self.labelMessage = "angle : "..message.angle.z.."; speed = "..message.speed
+		label.set_text("/level1#labelDebug", self.labelMessage)
+	end
+	if message_id == hash("wheelDirection") then
+		local wheelMessage = "wheel direction : "..message.direction
+		local lastDirMessage = "\nlastDir :"..message.lastDir
+		local rotationMessage = "\n  rotation :"..message.rotation
+		local goRotationMessage = "\ngoRotation :"..message.goRotation
+		local lastRotationMessage = "\nlastRotation :"..message.lastRotation
+		local lastRotationInMemory = "\nlastRotationInMemory :"..message.lastRotationInMemory
+		local calculDir = "\ncalculDir : "..message.calculDir
+		local spriteDir = "\nspriteDir : "..message.spriteDir
+		-- self.labelMessage = wheelMessage..lastDirMessage..rotationMessage..
+		-- goRotationMessage..lastRotationMessage..lastRotationInMemory
+		self.labelMessage = calculDir..spriteDir
+		label.set_text("/level1#labelDebug", self.labelMessage)
+	end	
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

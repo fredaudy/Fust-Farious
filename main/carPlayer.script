@@ -1,0 +1,95 @@
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	self.speed = 0
+	self.lastRotation = 0 						--last angle rotation before release the wheel
+	self.lastRotationInMemory = 0
+	self.rotation = vmath.quat_rotation_z(0)
+	self.getLastDirInMemory = self.lastDir
+	self.moving = false
+end
+
+function final(self)
+	msg.post(".", "release_input_focus")
+end
+
+function update(self, dt)
+	if self.moving then
+		-- rotate the vehicule
+		go.set_rotation(self.rotation)
+
+		-- get the new direction of the vehicule
+		spriteRotation = go.get_rotation()
+		spriteDirection = vmath.rotate(spriteRotation, vmath.vector3(0, 1, 0))
+		
+		local speedVector = vmath.vector3(spriteDirection.x * self.speed, spriteDirection.y * self.speed, 0)
+		local pos = go.get_position()
+		pos = pos + speedVector * dt
+		go.set_position(pos)
+
+		msg.post("/level1#labelDebug1", "wheelDirection", { direction=self.dir, 
+		rotation=self.rotation, 
+		goRotation=go.get_rotation(),
+		lastDir=self.lastDir,
+		lastRotation =  self.lastRotation,
+		lastRotationInMemory = self.lastRotationInMemory,
+		calculDir = self.dir,
+		spriteDir = spriteDirection} )
+	end
+
+	self.speed = 0
+	self.moving = false
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Learn more: https://defold.com/manuals/message-passing/
+	-- Remove this function if not needed
+end
+
+function GetSpeed(action)
+	local spritePos = vmath.vector3(600, 700, 0)
+	local dx = (spritePos.x - action.screen_x)^2
+	local dy = (spritePos.y - action.screen_y)^2
+	local newSpeed = math.sqrt(dx + dy)
+	
+	return newSpeed
+end
+
+function GetAngle(self, action)
+	local spritePos = vmath.vector3(600, 700, 0)
+	local dx = action.screen_x - spritePos.x
+	local dy = action.screen_y - spritePos.y
+	local angle = math.atan2(dx, dy) + math.pi
+	self.lastRotationInMemory = angle + self.lastRotation
+	local rotationQuaternion = vmath.quat_rotation_z(self.lastRotationInMemory)
+
+	return rotationQuaternion
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("touch") then
+		self.rotation = GetAngle(self, action)
+		--msg.post("/CarPlayer#labelDebug1", "carPos", { angle = self.rotation })
+		--pprint(self.rotation)
+
+		--self.speed = GetSpeed(action) / 2
+		self.speed = 100
+
+		-- local message = {}
+		-- message["angle"] = self.rotation
+		-- message["speed"] = self.speed
+		--msg.post("/CarPlayer#labelDebug1", "carPos", message)
+		self.moving = true
+	end
+	if action_id == hash("touch") and action.released then
+		-- rajouter un modulo 2pi pour le calcul de self.lastRotation
+		self.lastRotation = self.lastRotationInMemory%(2*math.pi)
+	end
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end
